@@ -36,6 +36,3 @@
 **_oidcUserInfoProcessor: com.liferay.portal.security.sso.openid.connect.internal.OIDCUserInfoProcessor SATISFIED 1..1 static**
 5. Run command 'lb com.liferay.portal.security.sso.openid.connect.impl' and using the bundle id from the output run command 'b [bundle_id]' e.g. 'b 848' and within the output 'Services in use' section check for the following to show that CustomOIDCUserInfoProcessor is being used in place of OIDCUserInfoProcessor:
 {com.liferay.portal.security.sso.openid.connect.internal.OIDCUserInfoProcessor}={component.id=xxxxx, **component.name=com.mw.custom.oidc.CustomOIDCUserInfoProcessor**, service.id=xxxxx, service.scope=bundle, service.bundleid=xxxxx}
-
-
-custom-oidc-user-processor
