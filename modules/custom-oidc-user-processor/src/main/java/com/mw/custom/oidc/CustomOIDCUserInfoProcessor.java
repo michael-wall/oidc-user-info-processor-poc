@@ -131,7 +131,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			String screenNameClaim = _getClaimString(
 					"screenName", userMapperJSONObject, userInfoJSONObject);
 			
-			_log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, trying fetchUserByScreenName: " + screenNameClaim);
+			if (_log.isInfoEnabled()) _log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, trying fetchUserByScreenName: " + screenNameClaim);
 			
 			// MW Try fetchUserByScreenName if fetchUserByEmailAddress returned null.
 			user = _userLocalService.fetchUserByScreenName(
@@ -142,7 +142,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 				return user.getUserId();
 			} else {
 				 // MW If both fetchUserByEmailAddress and fetchUserByScreenName return null then a new user will be created based on the provided claims.
-				_log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, fetchUserByScreenName: " + screenNameClaim + "returned null");
+				if (_log.isInfoEnabled()) _log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, fetchUserByScreenName: " + screenNameClaim + "returned null");
 			}
 		}
 
@@ -337,9 +337,12 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			changeRequired = true;
 		}
 
-		_log.info("userId: " + userId + ", changeRequired: " + changeRequired + ", emailAddressChanged: " + emailAddressChanged + ", screenNameChanged: " + screenNameChanged + ", otherFieldChanged: " + otherFieldChanged);
+		if (_log.isInfoEnabled()) _log.info("userId: " + userId + ", changeRequired: " + changeRequired + ", emailAddressChanged: " + emailAddressChanged + ", screenNameChanged: " + screenNameChanged + ", otherFieldChanged: " + otherFieldChanged);
 		
 		if (!changeRequired) return user;
+		
+		if (_log.isInfoEnabled()) if (emailAddressChanged) _log.info("userId: " + userId + ", changing emailAddress from: " + user.getEmailAddress() + " to: " + emailAddress);
+		if (_log.isInfoEnabled()) if (screenNameChanged) _log.info("userId: " + userId + ", changing screenName from: " + user.getScreenName() + " to: " + screenName);
 				
 		// Objects needed to call updateUser
 		Contact contact = user.getContact();
@@ -362,7 +365,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			contact.getJobTitle(), null, null, null, null, null,
 			serviceContext);
 		
-		_log.info("userId: " + userId + ", User updated.");		
+		if (_log.isInfoEnabled()) _log.info("userId: " + userId + ", User updated.");		
 		
 		return user;
 	}
