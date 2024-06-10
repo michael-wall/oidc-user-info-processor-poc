@@ -1,5 +1,6 @@
 package com.mw.custom.oidc;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.UserEmailAddressException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -25,6 +26,7 @@ import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -37,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -47,6 +51,11 @@ import org.osgi.service.component.annotations.Reference;
 	service = OIDCUserInfoProcessor.class
 )
 public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
+	
+	@Activate
+    protected void activate(Map<String, Object> properties) throws Exception {		
+		if (_log.isInfoEnabled()) _log.info("Activate...");		
+	}
 
 	public long processUserInfo(
 			long companyId, String issuer, ServiceContext serviceContext,
@@ -56,7 +65,13 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 		long userId = _getUserId(companyId, userInfoJSON, userInfoMapperJSON);
 
 		if (userId > 0) {
-			return userId;
+			// MW Added logic to update the Liferay user if necessary...
+			
+			User user = _updateUser(
+				companyId, userId, issuer, serviceContext, userInfoJSON,
+				userInfoMapperJSON);			
+			
+			return user.getUserId();
 		}
 
 		User user = _addUser(
@@ -120,6 +135,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			if (user != null) {
 				return user.getUserId();
 			} else {
+				 // MW If both fetchUserByEmailAddress and fetchUserByScreenName return null then a new user will be created based on the provided claims.
 				_log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, fetchUserByScreenName: " + screenNameClaim + "returned null");
 			}
 		}
@@ -262,6 +278,84 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			user.getUserId(), Contact.class.getName(), user.getContactId(),
 			phoneClaimString, null, listType.getListTypeId(), false,
 			serviceContext);
+	}
+	
+	private User _updateUser(
+			long companyId, long userId, String issuer, ServiceContext serviceContext,
+			String userInfoJSON, String userInfoMapperJSON)
+		throws Exception {
+		
+		JSONObject userInfoMapperJSONObject = _jsonFactory.createJSONObject(
+				userInfoMapperJSON);
+
+			JSONObject userMapperJSONObject =
+				userInfoMapperJSONObject.getJSONObject("user");
+
+			JSONObject userInfoJSONObject = _jsonFactory.createJSONObject(
+				userInfoJSON);
+		
+		User user = _userLocalService.fetchUser(userId); // User must exist to have gotten here...
+		
+		String emailAddress = _getClaimString("emailAddress", userMapperJSONObject, userInfoJSONObject);
+		String screenName = _getClaimString("screenName", userMapperJSONObject, userInfoJSONObject);
+		String firstName = _getClaimString("firstName", userMapperJSONObject, userInfoJSONObject);
+		String lastName = _getClaimString("lastName", userMapperJSONObject, userInfoJSONObject);
+		String middleName = _getClaimString("middleName", userMapperJSONObject, userInfoJSONObject);
+		
+		boolean changeRequired = false;
+		
+		boolean emailAddressChanged = false;
+		boolean screenNameChanged = false;
+		boolean otherFieldChanged = false;
+		
+		if (!user.getEmailAddress().equalsIgnoreCase(emailAddress)) { // Not case sensitive as liferay stores in lowercase.
+			emailAddressChanged = true;
+			
+			changeRequired = true;
+		}
+		
+		if (!user.getScreenName().equalsIgnoreCase(screenName)) { // Not case sensitive as liferay stores in lowercase.
+			screenNameChanged = true;
+			
+			changeRequired = true;
+		}
+		
+		if (!user.getFirstName().equals(firstName) ||
+			!user.getLastName().equals(lastName) ||
+			!user.getMiddleName().equals(middleName)) {	// These checks are case sensitive as Liferay retains the casing.
+			otherFieldChanged = true;
+			
+			changeRequired = true;
+		}
+
+		_log.info("userId: " + userId + ", changeRequired: " + changeRequired + ", emailAddressChanged: " + emailAddressChanged + ", screenNameChanged: " + screenNameChanged + ", otherFieldChanged: " + otherFieldChanged);
+		
+		if (!changeRequired) return user;
+				
+		// Objects needed to call updateUser
+		Contact contact = user.getContact();
+		Calendar birthdayCalendar = CalendarFactoryUtil.getCalendar();
+		birthdayCalendar.setTime(contact.getBirthday());
+				
+		_userLocalService.updateUser(
+			user.getUserId(), StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, false, user.getReminderQueryQuestion(),
+			user.getReminderQueryAnswer(), screenName, emailAddress, true,
+			null, user.getLanguageId(), user.getTimeZoneId(),
+			user.getGreeting(), user.getComments(), firstName,
+			middleName, lastName, contact.getPrefixListTypeId(),
+			contact.getSuffixListTypeId(), user.getMale(),
+			birthdayCalendar.get(Calendar.MONTH),
+			birthdayCalendar.get(Calendar.DATE),
+			birthdayCalendar.get(Calendar.YEAR), contact.getSmsSn(),
+			contact.getFacebookSn(), contact.getJabberSn(),
+			contact.getSkypeSn(), contact.getTwitterSn(),
+			contact.getJobTitle(), null, null, null, null, null,
+			serviceContext);
+		
+		_log.info("userId: " + userId + ", User updated.");		
+		
+		return user;
 	}
 
 	private User _addUser(
