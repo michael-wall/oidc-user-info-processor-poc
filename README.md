@@ -1,10 +1,10 @@
 **POC to customise OOTB behaviour of OIDCUserInfoProcessor**
 
 **Liferay Version:**
+- This POC is based on Liferay DXP 7.4 U92 source code. (i.e. OIDCUserInfoProcessor.java).
+- Ensure the OOTB code in CustomOIDCUserInfoProcessor is checked when upgrading Liferay to ensure changes to the OOTB OIDCUserInfoProcessor aren't missed.
 
-This POC is based on Liferay DXP 7.4 U92 source code. (i.e. OIDCUserInfoProcessor.java).
-Ensure the OOTB code in CustomOIDCUserInfoProcessor is checked when upgrading Liferay to ensure changes to the OOTB OIDCUserInfoProcessor aren't missed.
-
+**OIDCUserInfoProcessor Changes**
 1. _getUserId method updated to try to fetch the user by screenName if the fetch by emailAddress attempt returns null. This will handle use cases where an existing users emailAddress has changed on the oidc IdP and Liferay isn't yet aware of the change. It will NOT handle a use case where both emailAddress AND screenName have changed.
 2. The OOTB version doesn't perform any updates if the user already exists. processUserInfo method has been updated to update Liferay user details based on the provided claims, but only if an update is necessary. The claims that are checked before updating are:
 - emailAddress
