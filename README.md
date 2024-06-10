@@ -1,6 +1,7 @@
 **POC to customise OOTB behaviour of OIDCUserInfoProcessor**
 
 **Liferay Version:**
+
 This POC is based on Liferay DXP 7.4 U92 source code. (i.e. OIDCUserInfoProcessor.java).
 Ensure the OOTB code in CustomOIDCUserInfoProcessor is checked when upgrading Liferay to ensure changes to the OOTB OIDCUserInfoProcessor aren't missed.
 
