@@ -9,9 +9,10 @@
 - lastName
 - middleName
 
-**Liferay Version:**
+**Liferay and Java Version:**
 - This POC is based on Liferay DXP 7.4 U92 source code. (i.e. OIDCUserInfoProcessor.java).
 - Ensure the OOTB code in CustomOIDCUserInfoProcessor is checked when upgrading Liferay to ensure changes to the OOTB OIDCUserInfoProcessor aren't missed.
+- Local build and testing was done using JDK 8.
   
 **Custom OSGi modules:**
 - custom-oidc-user-processor contains CustomOIDCUserInfoProcessor to replace the OOTB OIDCUserInfoProcessor class with the custom logic. Due to the OIDCUserInfoProcessor setup, the class extends OIDCUserInfoProcessor with OSGi Component service set to OIDCUserInfoProcessor, but it duplicates all methods from OIDCUserInfoProcessor (as all except processUserInfo are private). Existing methods processUserInfo and _getUserId have been updated, and method _updateUser has been added. All other methods are unchanged from OIDCUserInfoProcessor.
