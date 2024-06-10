@@ -1,0 +1,4 @@
+Bundle-Name: custom-oidc-user-processor
+Bundle-SymbolicName: custom.oidc.user.processor
+Bundle-Version: 1.0.0
+Export-Package: com.mw.custom.oidc

@@ -1,0 +1,5 @@
+dependencies {
+	compileOnly group: "com.liferay.portal", name: "release.dxp.api"
+	
+	compileOnly group: "com.liferay", name: "com.liferay.portal.security.sso.openid.connect.impl"
+}
