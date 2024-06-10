@@ -57,6 +57,9 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 		if (_log.isInfoEnabled()) _log.info("Activate...");		
 	}
 
+	/**
+	 * MW existing method that has been updated
+	 */
 	public long processUserInfo(
 			long companyId, String issuer, ServiceContext serviceContext,
 			String userInfoJSON, String userInfoMapperJSON)
@@ -99,6 +102,9 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 		return user.getUserId();
 	}
 	
+	/**
+	 * MW existing method that has been updated
+	 */	
 	private long _getUserId(
 			long companyId, String userInfoJSON, String userInfoMapperJSON)
 		throws Exception {
@@ -280,6 +286,9 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			serviceContext);
 	}
 	
+	/**
+	 * MW new method that has been added
+	 */
 	private User _updateUser(
 			long companyId, long userId, String issuer, ServiceContext serviceContext,
 			String userInfoJSON, String userInfoMapperJSON)
