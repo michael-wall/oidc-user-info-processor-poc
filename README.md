@@ -6,7 +6,11 @@ POC to customise OIDCUserInfoProcessor:
 Local deployment steps:
 1. Deploy the custom modules and confirm successful deployment via gogo shell
 2. Add the com.liferay.portal.security.sso.openid.connect.internal.OpenIdConnectAuthenticationHandlerImpl.config config file (located in configs/common) to the environments osgi/config folder
-3. Check the status of the OpenIdConnectAuthenticationHandlerImpl OSGi component with this gogo shell command: scr:info com.liferay.portal.security.sso.openid.connect.internal.OpenIdConnectAuthenticationHandlerImpl
+3. Check the status of the OpenIdConnectAuthenticationHandlerImpl OSGi component with these Gogo shell commands:
+4. Run command 'scr:info com.liferay.portal.security.sso.openid.connect.internal.OpenIdConnectAuthenticationHandlerImpl' and ensure all of the References are satisfied in the output, in particular the following:
+**_oidcUserInfoProcessor: com.liferay.portal.security.sso.openid.connect.internal.OIDCUserInfoProcessor SATISFIED 1..1 static**
+6. Run command 'lb com.liferay.portal.security.sso.openid.connect.impl' and using the bundle id from the output run command 'b [bundle_id]' e.g. 'b 848' and within the output 'Services in use' section check for the following to show that CustomOIDCUserInfoProcessor is being used in place of OIDCUserInfoProcessor:
+{com.liferay.portal.security.sso.openid.connect.internal.OIDCUserInfoProcessor}={component.id=xxxxx, **component.name=com.mw.custom.oidc.CustomOIDCUserInfoProcessor**, service.id=xxxxx, service.scope=bundle, service.bundleid=xxxxx}
 
 Liferay PaaS setup steps:
 1. Add the custom modules to the Liferay service modules folder
