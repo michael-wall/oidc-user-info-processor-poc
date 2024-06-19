@@ -131,6 +131,12 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			String screenNameClaim = _getClaimString(
 					"screenName", userMapperJSONObject, userInfoJSONObject);
 			
+			if (Validator.isNull(screenNameClaim)) {
+				if (_log.isInfoEnabled()) _log.info("screenNameClaim is null, unable to proceed with fetchUserByEmailAddress check.");
+				
+				return 0;
+			}
+			
 			if (_log.isInfoEnabled()) _log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, trying fetchUserByScreenName: " + screenNameClaim);
 			
 			// MW Try fetchUserByScreenName if fetchUserByEmailAddress returned null.
@@ -142,7 +148,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 				return user.getUserId();
 			} else {
 				 // MW If both fetchUserByEmailAddress and fetchUserByScreenName return null then a new user will be created based on the provided claims.
-				if (_log.isInfoEnabled()) _log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, fetchUserByScreenName: " + screenNameClaim + "returned null");
+				if (_log.isInfoEnabled()) _log.info("fetchUserByEmailAddress: " + emailAddressClaim + " returned null, fetchUserByScreenName: " + screenNameClaim + " returned null");
 			}
 		}
 
@@ -309,12 +315,12 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 		String screenName = _getClaimString("screenName", userMapperJSONObject, userInfoJSONObject);
 		String firstName = _getClaimString("firstName", userMapperJSONObject, userInfoJSONObject);
 		String lastName = _getClaimString("lastName", userMapperJSONObject, userInfoJSONObject);
-		String middleName = _getClaimString("middleName", userMapperJSONObject, userInfoJSONObject);
 		
 		boolean changeRequired = false;
-		
+	
 		boolean emailAddressChanged = false;
 		boolean screenNameChanged = false;
+		boolean checkScreenName = false;
 		boolean otherFieldChanged = false;
 		
 		if (!user.getEmailAddress().equalsIgnoreCase(emailAddress)) { // Not case sensitive as liferay stores in lowercase.
@@ -323,15 +329,24 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			changeRequired = true;
 		}
 		
-		if (!user.getScreenName().equalsIgnoreCase(screenName)) { // Not case sensitive as liferay stores in lowercase.
-			screenNameChanged = true;
+		if (Validator.isNull(screenName)) {
+			if (_log.isInfoEnabled()) _log.info("screenName is null, skip check.");
 			
-			changeRequired = true;
+			checkScreenName = false;
+		}
+		
+		if (checkScreenName) {
+			if (!user.getScreenName().equalsIgnoreCase(screenName)) { // Not case sensitive as liferay stores in lowercase.
+				screenNameChanged = true;
+				
+				changeRequired = true;
+			}
+		} else {
+			screenName = user.getScreenName(); // Don't change screenName if not provided...
 		}
 		
 		if (!user.getFirstName().equals(firstName) ||
-			!user.getLastName().equals(lastName) ||
-			!user.getMiddleName().equals(middleName)) {	// These checks are case sensitive as Liferay retains the casing.
+			!user.getLastName().equals(lastName)) {	// These checks are case sensitive as Liferay retains the casing.
 			otherFieldChanged = true;
 			
 			changeRequired = true;
@@ -355,7 +370,7 @@ public class CustomOIDCUserInfoProcessor extends OIDCUserInfoProcessor {
 			user.getReminderQueryAnswer(), screenName, emailAddress, true,
 			null, user.getLanguageId(), user.getTimeZoneId(),
 			user.getGreeting(), user.getComments(), firstName,
-			middleName, lastName, contact.getPrefixListTypeId(),
+			user.getMiddleName(), lastName, contact.getPrefixListTypeId(),
 			contact.getSuffixListTypeId(), user.getMale(),
 			birthdayCalendar.get(Calendar.MONTH),
 			birthdayCalendar.get(Calendar.DATE),
