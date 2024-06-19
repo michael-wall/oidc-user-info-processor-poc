@@ -42,5 +42,5 @@
 5. Run command 'lb com.liferay.portal.security.sso.openid.connect.impl' and using the bundle id from the output run command 'b [bundle_id]' e.g. 'b 848' and within the output 'Services in use' section check for the following to show that CustomOIDCUserInfoProcessor is being used in place of OIDCUserInfoProcessor:
 {com.liferay.portal.security.sso.openid.connect.internal.OIDCUserInfoProcessor}={component.id=xxxxx, **component.name=com.mw.custom.oidc.CustomOIDCUserInfoProcessor**, service.id=xxxxx, service.scope=bundle, service.bundleid=xxxxx}
 
-**ScreenName claim mapping**
-Ensure that the screenName claim mapping is in place in Control Panel > Security > OAuth Client Administration > Client > OpenId Connect User Information Mapper JSON. If it isn't then the extra screenName check to match the user will not be performed.
+**ScreenName Claim mapping:**
+- Ensure that the screenName claim mapping is in place in Control Panel > Security > OAuth Client Administration > Client > OpenId Connect User Information Mapper JSON. If it isn't then the extra screenName check to match the user will not be performed.
