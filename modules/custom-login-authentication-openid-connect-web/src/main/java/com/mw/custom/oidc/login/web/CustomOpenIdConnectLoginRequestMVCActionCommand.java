@@ -15,12 +15,15 @@ import com.liferay.portal.security.sso.openid.connect.OpenIdConnectAuthenticatio
 import com.liferay.portal.security.sso.openid.connect.OpenIdConnectServiceException;
 import com.liferay.portal.security.sso.openid.connect.constants.OpenIdConnectWebKeys;
 
+import java.util.Map;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -33,11 +36,17 @@ import org.osgi.service.component.annotations.Reference;
 			"auth.token.ignore.mvc.action=true",
 			"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
 			"javax.portlet.name=" + PortletKeys.LOGIN,
-			"mvc.command.name=" + OpenIdConnectWebKeys.OPEN_ID_CONNECT_REQUEST_ACTION_NAME
+			"mvc.command.name=" + OpenIdConnectWebKeys.OPEN_ID_CONNECT_REQUEST_ACTION_NAME,
+			"service.ranking:Integer=100"
 		},
 		service = MVCActionCommand.class
 	)
 public class CustomOpenIdConnectLoginRequestMVCActionCommand extends BaseMVCActionCommand {
+	
+	@Activate
+    protected void activate(Map<String, Object> properties) throws Exception {		
+		if (_log.isInfoEnabled()) _log.info("Activate...");		
+	}
 
 	@Override
 	public void doProcessAction(
