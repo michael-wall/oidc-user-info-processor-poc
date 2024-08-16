@@ -43,11 +43,25 @@ import org.osgi.service.component.annotations.Reference;
 	)
 public class CustomOpenIdConnectLoginRequestMVCActionCommand extends BaseMVCActionCommand {
 	
+	public static final String[] RESERVED_URL_PREFIXES = {"/c/portal/login"};
+	
 	@Activate
     protected void activate(Map<String, Object> properties) throws Exception {		
 		if (_log.isInfoEnabled()) _log.info("Activate...");		
 	}
 
+	private boolean isReservedUrlPrefix(String redirectParam) {
+		if (Validator.isNull(redirectParam)) return false;
+		
+		for (int i = 0; i < RESERVED_URL_PREFIXES.length; i++) {
+			if (redirectParam.toLowerCase().startsWith(RESERVED_URL_PREFIXES[i].toLowerCase())) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public void doProcessAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
@@ -71,8 +85,8 @@ public class CustomOpenIdConnectLoginRequestMVCActionCommand extends BaseMVCActi
 		
 			_log.info("redirect: " + redirectParam);
 			
-			if (Validator.isNotNull(redirectParam) && redirectParam.startsWith("/c/portal/login")) {
-				_log.info("not overriding " + OpenIdConnectWebKeys.OPEN_ID_CONNECT_ACTION_URL + " httpSession attribute...");
+			if (Validator.isNotNull(redirectParam) && isReservedUrlPrefix(redirectParam)) {
+				_log.info("redirect starts with reserved url prefix, not overriding " + OpenIdConnectWebKeys.OPEN_ID_CONNECT_ACTION_URL + " httpSession attribute...");
 			} else {
 				httpSession.setAttribute(
 					OpenIdConnectWebKeys.OPEN_ID_CONNECT_ACTION_URL,

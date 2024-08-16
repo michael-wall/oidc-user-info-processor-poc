@@ -1,4 +1,4 @@
 Bundle-Name: custom-login-authentication-openid-connect-web
-Bundle-SymbolicName: com.mw.custom.oidc.login.web
+Bundle-SymbolicName: custom.oidc.login.web
 Bundle-Version: 1.0.0
 Export-Package: com.mw.custom.oidc.login.web
